@@ -179,3 +179,229 @@
                 </div>
             `).join('');
   }
+  async function eliminarTarea(id) {
+    if (!confirm('¿Estás seguro de eliminar esta tarea?')) return;
+
+    try {
+      const response = await fetch(`${API_BASE}/tareas/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        cargarTareas();
+        cargarHistorial();
+        actualizarEstadisticas();
+        alert('✅ Tarea eliminada');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al eliminar la tarea');
+    }
+  }
+
+  async function completarTarea(id) {
+    try {
+      const response = await fetch(`${API_BASE}/tareas/${id}/completar`, {
+        method: 'POST'
+      });
+
+      if (response.ok) {
+        cargarTareas();
+        cargarHistorial();
+        actualizarEstadisticas();
+        alert('✅ Tarea completada');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al completar la tarea');
+    }
+  }
+
+  async function buscarTareas() {
+    const titulo = document.getElementById('buscarTitulo').value;
+    if (!titulo.trim()) {
+      cargarTareas();
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/tareas/buscar?titulo=${encodeURIComponent(titulo)}`);
+      const tareas = await response.json();
+      mostrarTareas(tareas);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+
+  // Permitir buscar con Enter
+  document.getElementById('buscarTitulo').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      buscarTareas();
+    }
+  });
+
+  // ========== FUNCIONES PARA PILA (HISTORIAL) ==========
+
+  async function cargarHistorial() {
+    try {
+      const response = await fetch(`${API_BASE}/historial`);
+      const historial = await response.json();
+      mostrarHistorial(historial);
+    } catch (error) {
+      console.error('Error al cargar historial:', error);
+    }
+  }
+
+  function mostrarHistorial(historial) {
+    const container = document.getElementById('historialAcciones');
+
+    if (historial.length === 0) {
+      container.innerHTML = '<div class="empty-message">No hay acciones registradas aún.</div>';
+      return;
+    }
+
+    // Mostrar en orden inverso (último primero, como LIFO)
+    const historialInvertido = [...historial].reverse();
+    container.innerHTML = historialInvertido.map(accion => {
+      const fecha = new Date(accion.fechaHora).toLocaleString('es-ES');
+      return `
+                    <div class="historial-item">
+                        <strong>${accion.tipo}</strong>: ${accion.descripcion}
+                        <div style="color: #999; font-size: 0.8em; margin-top: 5px;">${fecha}</div>
+                    </div>
+                `;
+    }).join('');
+  }
+
+  async function verUltimaAccion() {
+    try {
+      const response = await fetch(`${API_BASE}/historial/ultima`);
+      if (response.status === 204) {
+        alert('No hay acciones en el historial');
+        return;
+      }
+      const accion = await response.json();
+      const fecha = new Date(accion.fechaHora).toLocaleString('es-ES');
+      alert(`Última acción:\n${accion.tipo}: ${accion.descripcion}\nFecha: ${fecha}`);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+
+  async function deshacerAccion() {
+    if (!confirm('¿Deshacer la última acción?')) return;
+
+    try {
+      const response = await fetch(`${API_BASE}/historial/deshacer`, {
+        method: 'POST'
+      });
+
+      if (response.status === 204) {
+        alert('No hay acciones para deshacer');
+        return;
+      }
+
+      if (response.ok) {
+        const accion = await response.json();
+        cargarHistorial();
+        cargarTareas();
+        actualizarEstadisticas();
+        alert(`✅ Acción deshecha: ${accion.tipo} - ${accion.descripcion}`);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al deshacer la acción');
+    }
+  }
+
+  // ========== FUNCIONES PARA COLA ==========
+
+  async function cargarCola() {
+    try {
+      const response = await fetch(`${API_BASE}/cola`);
+      const tareas = await response.json();
+      mostrarCola(tareas);
+    } catch (error) {
+      console.error('Error al cargar cola:', error);
+    }
+  }
+
+  function mostrarCola(tareas) {
+    const container = document.getElementById('colaTareas');
+
+    if (tareas.length === 0) {
+      container.innerHTML = '<div class="empty-message">No hay tareas en la cola.</div>';
+      return;
+    }
+
+    container.innerHTML = tareas.map((tarea, index) => `
+                <div class="cola-item">
+                    <div style="font-weight: bold; margin-bottom: 5px;">
+                        #${index + 1} - ${tarea.titulo}
+                    </div>
+                    <div style="color: #666; font-size: 0.9em;">
+                        Prioridad: ${tarea.prioridad} | Estado: ${tarea.estado.replace('_', ' ')}
+                    </div>
+                </div>
+            `).join('');
+  }
+
+  async function verSiguienteTarea() {
+    try {
+      const response = await fetch(`${API_BASE}/cola`);
+      const tareas = await response.json();
+      if (tareas.length === 0) {
+        alert('No hay tareas en la cola');
+        return;
+      }
+      const siguiente = tareas[0];
+      alert(`Siguiente tarea a procesar:\n\n${siguiente.titulo}\nPrioridad: ${siguiente.prioridad}`);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+
+  async function procesarSiguiente() {
+    if (!confirm('¿Procesar la siguiente tarea de la cola?')) return;
+
+    try {
+      const response = await fetch(`${API_BASE}/cola/procesar`, {
+        method: 'POST'
+      });
+
+      if (response.status === 204) {
+        alert('No hay tareas en la cola para procesar');
+        return;
+      }
+
+      if (response.ok) {
+        const tarea = await response.json();
+        cargarCola();
+        actualizarEstadisticas();
+        alert(`✅ Tarea procesada: ${tarea.titulo}`);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al procesar la tarea');
+    }
+  }
+
+  // ========== ESTADÍSTICAS ==========
+
+  async function actualizarEstadisticas() {
+    try {
+      const response = await fetch(`${API_BASE}/estadisticas`);
+      const data = await response.json();
+      document.getElementById('estadisticas').textContent = `📊 ${data.estadisticas}`;
+    } catch (error) {
+      console.error('Error al cargar estadísticas:', error);
+    }
+  }
+
+  // Actualizar estadísticas cada 5 segundos
+  setInterval(actualizarEstadisticas, 5000);
+</script>
+</body>
+</html>
+
+
