@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestión de Tareas</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<div class="container">
+  <h1>📋 Sistema de Gestión de Tareas</h1>
+
+  <div class="stats-bar" id="estadisticas">
+    Cargando estadísticas...
+  </div>
+
+  <div class="grid">
+    <!-- Sección: Lista/Arreglo - Gestión de Tareas -->
+    <div class="section">
+      <h2>📝 Lista/Arreglo - Gestión de Tareas</h2>
+
+      <h3>Agregar Nueva Tarea</h3>
+      <div class="form-group">
+        <label>Título:</label>
+        <input type="text" id="titulo" placeholder="Ej: Estudiar para el examen">
+      </div>
+      <div class="form-group">
+        <label>Descripción:</label>
+        <textarea id="descripcion" rows="3" placeholder="Descripción de la tarea"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Prioridad:</label>
+        <select id="prioridad">
+          <option value="ALTA">Alta</option>
+          <option value="MEDIA" selected>Media</option>
+          <option value="BAJA">Baja</option>
+        </select>
+      </div>
+      <button onclick="agregarTarea()">➕ Agregar Tarea</button>
+
+      <h3>Buscar Tareas</h3>
+      <div class="search-box">
+        <input type="text" id="buscarTitulo" placeholder="Buscar por título...">
+        <button onclick="buscarTareas()">🔍 Buscar</button>
+      </div>
+
+      <h3>Lista de Tareas</h3>
+      <div class="tareas-list" id="listaTareas">
+        <div class="empty-message">No hay tareas. Agrega una nueva tarea para comenzar.</div>
+      </div>
+    </div>
+
+    <!-- Sección: Pila - Historial de Acciones -->
+    <div class="section">
+      <h2>📚 Pila (LIFO) - Historial de Acciones</h2>
+      <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">
+        El último elemento ingresado es el primero en salir (Last In, First Out)
+      </p>
+
+      <div class="actions-buttons">
+        <button onclick="cargarHistorial()">🔄 Actualizar Historial</button>
+        <button class="btn-info" onclick="verUltimaAccion()">👁️ Ver Última Acción</button>
+        <button class="btn-danger" onclick="deshacerAccion()">↩️ Deshacer Última Acción</button>
+      </div>
+
+      <h3>Historial Completo</h3>
+      <div class="tareas-list" id="historialAcciones">
+        <div class="empty-message">No hay acciones registradas aún.</div>
+      </div>
+    </div>
+
+    <!-- Sección: Cola - Tareas Pendientes -->
+    <div class="section">
+      <h2>🔄 Cola (FIFO) - Tareas Pendientes</h2>
+      <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">
+        El primer elemento ingresado es el primero en salir (First In, First Out)
+      </p>
+
+      <div class="actions-buttons">
+        <button onclick="cargarCola()">🔄 Actualizar Cola</button>
+        <button class="btn-info" onclick="verSiguienteTarea()">👁️ Ver Siguiente</button>
+        <button class="btn-success" onclick="procesarSiguiente()">✅ Procesar Siguiente</button>
+      </div>
+
+      <h3>Tareas en Cola</h3>
+      <div class="tareas-list" id="colaTareas">
+        <div class="empty-message">No hay tareas en la cola.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_BASE = '/api';
+
+  // Cargar datos al iniciar
+  window.onload = function() {
+    cargarTareas();
+    cargarHistorial();
+    cargarCola();
+    actualizarEstadisticas();
+  };
+
+  // ========== FUNCIONES PARA LISTA/ARREGLO ==========
+
+  async function agregarTarea() {
+    const titulo = document.getElementById('titulo').value;
+    const descripcion = document.getElementById('descripcion').value;
+    const prioridad = document.getElementById('prioridad').value;
+
+    if (!titulo.trim()) {
+      alert('Por favor ingresa un título para la tarea');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/tareas`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ titulo, descripcion, prioridad })
+      });
+
+      if (response.ok) {
+        document.getElementById('titulo').value = '';
+        document.getElementById('descripcion').value = '';
+        cargarTareas();
+        cargarHistorial();
+        cargarCola();
+        actualizarEstadisticas();
+        alert('✅ Tarea agregada correctamente');
+      } else {
+        alert('Error al agregar la tarea');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al agregar la tarea');
+    }
+  }
+
+  async function cargarTareas() {
+    try {
+      const response = await fetch(`${API_BASE}/tareas`);
+      const tareas = await response.json();
+      mostrarTareas(tareas);
+    } catch (error) {
+      console.error('Error al cargar tareas:', error);
+    }
+  }
+
+  function mostrarTareas(tareas) {
+    const container = document.getElementById('listaTareas');
+
+    if (tareas.length === 0) {
+      container.innerHTML = '<div class="empty-message">No hay tareas. Agrega una nueva tarea para comenzar.</div>';
+      return;
+    }
+
+    container.innerHTML = tareas.map(tarea => `
+                <div class="tarea-item ${tarea.estado === 'COMPLETADA' ? 'completada' : tarea.estado === 'EN_PROGRESO' ? 'en-progreso' : ''}">
+                    <div class="tarea-header">
+                        <div class="tarea-titulo">${tarea.titulo}</div>
+                        <span class="tarea-prioridad prioridad-${tarea.prioridad.toLowerCase()}">
+                            ${tarea.prioridad}
+                        </span>
+                    </div>
+                    <div style="color: #666; margin-bottom: 5px;">${tarea.descripcion || 'Sin descripción'}</div>
+                    <span class="tarea-estado estado-${tarea.estado.toLowerCase().replace('_', '-')}">
+                        ${tarea.estado.replace('_', ' ')}
+                    </span>
+                    <div class="tarea-acciones">
+                        ${tarea.estado !== 'COMPLETADA' ?
+            `<button class="btn-success" onclick="completarTarea(${tarea.id})">✅ Completar</button>` :
+            ''
+    }
+                        <button class="btn-danger" onclick="eliminarTarea(${tarea.id})">🗑️ Eliminar</button>
+                    </div>
+                </div>
+            `).join('');
+  }
