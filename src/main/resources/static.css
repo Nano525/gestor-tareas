@@ -98,3 +98,152 @@ button {
     transition: transform 0.2s;
 }
 
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.tareas-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 15px;
+}
+
+.tarea-item {
+    background: #f8f9fa;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border-left: 4px solid #667eea;
+}
+
+.tarea-item.completada {
+    border-left-color: #43e97b;
+    opacity: 0.7;
+}
+
+.tarea-item.en-progreso {
+    border-left-color: #f5576c;
+}
+
+.tarea-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.tarea-titulo {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #333;
+}
+
+.tarea-prioridad {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.prioridad-alta {
+    background: #f5576c;
+    color: white;
+}
+
+.prioridad-media {
+    background: #fbb040;
+    color: white;
+}
+
+.prioridad-baja {
+    background: #43e97b;
+    color: white;
+}
+
+.tarea-estado {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8em;
+    margin-top: 5px;
+}
+
+.estado-pendiente {
+    background: #ddd;
+    color: #333;
+}
+
+.estado-en-progreso {
+    background: #fbb040;
+    color: white;
+}
+
+.estado-completada {
+    background: #43e97b;
+    color: white;
+}
+
+.tarea-acciones {
+    margin-top: 10px;
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.historial-item, .cola-item {
+    background: #f8f9fa;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 5px;
+    font-size: 0.9em;
+}
+
+.historial-item {
+    border-left: 4px solid #764ba2;
+}
+
+.cola-item {
+    border-left: 4px solid #43e97b;
+}
+
+.empty-message {
+    text-align: center;
+    color: #999;
+    padding: 20px;
+    font-style: italic;
+}
+
+.actions-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.search-box {
+    margin-bottom: 15px;
+}
+
+.search-box input {
+    display: inline-block;
+    width: calc(100% - 100px);
+    margin-right: 10px;
+}
+
