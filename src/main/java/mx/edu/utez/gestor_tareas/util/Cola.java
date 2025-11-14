@@ -1,4 +1,4 @@
-package mx.edu.utez.gestor_tareas;
+package mx.edu.utez.gestor_tareas.util;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package mx.edu.utez.gestor_tareas;
+package mx.edu.utez.gestor_tareas.model;
 
 import java.time.LocalDateTime;
 
