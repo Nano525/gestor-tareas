@@ -2,24 +2,23 @@ package mx.edu.utez.gestor_tareas.Service;
 
 import mx.edu.utez.gestor_tareas.model.Accion;
 import mx.edu.utez.gestor_tareas.model.Tarea;
+import mx.edu.utez.gestor_tareas.util.ArbolBinario;
 import mx.edu.utez.gestor_tareas.util.Cola;
+import mx.edu.utez.gestor_tareas.util.Lista;
 import mx.edu.utez.gestor_tareas.util.Pila;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Servicio que gestiona las tareas utilizando las estructuras de datos:
  * - Lista/Arreglo: Para almacenamiento principal de tareas
  * - Pila: Para historial de acciones (LIFO)
  * - Cola: Para procesar tareas por orden de llegada (FIFO)
+ * - Árbol Binario: Para organizar tareas por prioridad
  */
 @Service
 public class TareaService {
     // Lista/Arreglo: Almacenamiento principal de tareas
-    private List<Tarea> tareas;
+    private Lista<Tarea> tareas;
     
     // Pila: Historial de acciones (LIFO - Last In, First Out)
     private Pila<Accion> historialAcciones;
@@ -27,12 +26,16 @@ public class TareaService {
     // Cola: Tareas pendientes por procesar (FIFO - First In, First Out)
     private Cola<Tarea> colaTareasPendientes;
     
+    // Árbol Binario: Organización de tareas por prioridad
+    private ArbolBinario arbolPorPrioridad;
+    
     private Long contadorId;
 
     public TareaService() {
-        this.tareas = new ArrayList<>();
+        this.tareas = new Lista<>();
         this.historialAcciones = new Pila<>();
         this.colaTareasPendientes = new Cola<>();
+        this.arbolPorPrioridad = new ArbolBinario();
         this.contadorId = 1L;
     }
 
@@ -40,18 +43,14 @@ public class TareaService {
 
     /**
      * Agrega una nueva tarea a la lista principal
-     * También la agrega a la cola de pendientes y registra la acción en la pila
+     * También la agrega a la cola de pendientes, al árbol binario y registra la acción en la pila
      */
     public Tarea agregarTarea(String titulo, String descripcion, Tarea.Prioridad prioridad) {
         Tarea nuevaTarea = new Tarea(contadorId++, titulo, descripcion, prioridad, Tarea.Estado.PENDIENTE);
         
-        // Agregar a la lista principal
-        tareas.add(nuevaTarea);
-        
-        // Agregar a la cola de pendientes (FIFO)
+        tareas.agregar(nuevaTarea);
         colaTareasPendientes.encolar(nuevaTarea);
-        
-        // Registrar acción en la pila de historial (LIFO)
+        arbolPorPrioridad.insertar(nuevaTarea);
         historialAcciones.push(new Accion("CREAR", "Tarea creada: " + titulo));
         
         return nuevaTarea;
@@ -63,7 +62,8 @@ public class TareaService {
     public boolean eliminarTarea(Long id) {
         Tarea tareaEliminada = buscarTareaPorId(id);
         if (tareaEliminada != null) {
-            tareas.remove(tareaEliminada);
+            tareas.eliminar(tareaEliminada);
+            arbolPorPrioridad.eliminar(tareaEliminada);
             historialAcciones.push(new Accion("ELIMINAR", "Tarea eliminada: " + tareaEliminada.getTitulo()));
             return true;
         }
@@ -74,26 +74,35 @@ public class TareaService {
      * Busca una tarea por ID
      */
     public Tarea buscarTareaPorId(Long id) {
-        return tareas.stream()
-                .filter(t -> t.getId().equals(id))
-                .findFirst()
-                .orElse(null);
+        for (int i = 0; i < tareas.tamanio(); i++) {
+            Tarea tarea = tareas.obtener(i);
+            if (tarea.getId().equals(id)) {
+                return tarea;
+            }
+        }
+        return null;
     }
 
     /**
      * Busca tareas por título
      */
-    public List<Tarea> buscarTareasPorTitulo(String titulo) {
-        return tareas.stream()
-                .filter(t -> t.getTitulo().toLowerCase().contains(titulo.toLowerCase()))
-                .collect(Collectors.toList());
+    public Lista<Tarea> buscarTareasPorTitulo(String titulo) {
+        Lista<Tarea> resultado = new Lista<>();
+        String tituloLower = titulo.toLowerCase();
+        for (int i = 0; i < tareas.tamanio(); i++) {
+            Tarea tarea = tareas.obtener(i);
+            if (tarea.getTitulo().toLowerCase().contains(tituloLower)) {
+                resultado.agregar(tarea);
+            }
+        }
+        return resultado;
     }
 
     /**
      * Obtiene todas las tareas
      */
-    public List<Tarea> obtenerTodasLasTareas() {
-        return new ArrayList<>(tareas);
+    public Lista<Tarea> obtenerTodasLasTareas() {
+        return tareas;
     }
 
     /**
@@ -102,10 +111,17 @@ public class TareaService {
     public Tarea actualizarTarea(Long id, String titulo, String descripcion, Tarea.Prioridad prioridad, Tarea.Estado estado) {
         Tarea tarea = buscarTareaPorId(id);
         if (tarea != null) {
+            Tarea.Prioridad prioridadAnterior = tarea.getPrioridad();
             tarea.setTitulo(titulo);
             tarea.setDescripcion(descripcion);
             tarea.setPrioridad(prioridad);
             tarea.setEstado(estado);
+            
+            if (!prioridadAnterior.equals(prioridad)) {
+                arbolPorPrioridad.eliminar(tarea);
+                arbolPorPrioridad.insertar(tarea);
+            }
+            
             historialAcciones.push(new Accion("ACTUALIZAR", "Tarea actualizada: " + titulo));
             return tarea;
         }
@@ -130,7 +146,7 @@ public class TareaService {
     /**
      * Obtiene el historial completo de acciones (sin modificar la pila)
      */
-    public List<Accion> obtenerHistorial() {
+    public Lista<Accion> obtenerHistorial() {
         return historialAcciones.obtenerTodos();
     }
 
@@ -174,7 +190,7 @@ public class TareaService {
     /**
      * Obtiene todas las tareas pendientes en la cola (sin modificar la cola)
      */
-    public List<Tarea> obtenerTareasEnCola() {
+    public Lista<Tarea> obtenerTareasEnCola() {
         return colaTareasPendientes.obtenerTodos();
     }
 
@@ -189,13 +205,58 @@ public class TareaService {
      * Obtiene estadísticas del sistema
      */
     public String obtenerEstadisticas() {
-        long pendientes = tareas.stream().filter(t -> t.getEstado() == Tarea.Estado.PENDIENTE).count();
-        long enProgreso = tareas.stream().filter(t -> t.getEstado() == Tarea.Estado.EN_PROGRESO).count();
-        long completadas = tareas.stream().filter(t -> t.getEstado() == Tarea.Estado.COMPLETADA).count();
+        int pendientes = 0;
+        int enProgreso = 0;
+        int completadas = 0;
         
-        return String.format("Total: %d | Pendientes: %d | En Progreso: %d | Completadas: %d | En Cola: %d | Historial: %d",
-                tareas.size(), pendientes, enProgreso, completadas, 
-                colaTareasPendientes.tamanio(), historialAcciones.tamanio());
+        for (int i = 0; i < tareas.tamanio(); i++) {
+            Tarea tarea = tareas.obtener(i);
+            if (tarea.getEstado() == Tarea.Estado.PENDIENTE) {
+                pendientes++;
+            } else if (tarea.getEstado() == Tarea.Estado.EN_PROGRESO) {
+                enProgreso++;
+            } else if (tarea.getEstado() == Tarea.Estado.COMPLETADA) {
+                completadas++;
+            }
+        }
+        
+        return String.format("Total: %d | Pendientes: %d | En Progreso: %d | Completadas: %d | En Cola: %d | Historial: %d | Árbol: %d",
+                tareas.tamanio(), pendientes, enProgreso, completadas, 
+                colaTareasPendientes.tamanio(), historialAcciones.tamanio(), arbolPorPrioridad.tamanio());
+    }
+
+    // ========== OPERACIONES CON ÁRBOL BINARIO ==========
+
+    /**
+     * Obtiene las tareas del árbol en orden inorden
+     * @return Lista de tareas ordenadas por prioridad (inorden)
+     */
+    public Lista<Tarea> obtenerTareasInorden() {
+        return arbolPorPrioridad.recorrerInorden();
+    }
+
+    /**
+     * Obtiene las tareas del árbol en orden preorden
+     * @return Lista de tareas ordenadas por prioridad (preorden)
+     */
+    public Lista<Tarea> obtenerTareasPreorden() {
+        return arbolPorPrioridad.recorrerPreorden();
+    }
+
+    /**
+     * Obtiene las tareas del árbol en orden postorden
+     * @return Lista de tareas ordenadas por prioridad (postorden)
+     */
+    public Lista<Tarea> obtenerTareasPostorden() {
+        return arbolPorPrioridad.recorrerPostorden();
+    }
+
+    /**
+     * Obtiene todas las tareas del árbol
+     * @return Lista con todas las tareas del árbol
+     */
+    public Lista<Tarea> obtenerTodasLasTareasDelArbol() {
+        return arbolPorPrioridad.obtenerTodas();
     }
 }
 

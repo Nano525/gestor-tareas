@@ -1,82 +1,117 @@
 package mx.edu.utez.gestor_tareas.util;
 
-import java.util.ArrayList;
-import java.util.List;
-
-/*
-  Implementación de una estructura de datos Pila (Stack) usando LIFO (Last In, First Out).
-  El último elemento ingresado es el primero en salir.
-  Utilizada para mantener un historial de acciones realizadas en el sistema.
+/**
+ * Implementación de una estructura de datos Pila (Stack) usando LIFO (Last In, First Out).
+ * El último elemento ingresado es el primero en salir.
+ * Utilizada para mantener un historial de acciones realizadas en el sistema.
+ * Implementada con arrays nativos, sin usar clases de java.util.*
  */
 public class Pila<T> {
-    private List<T> elementos;
+    private Object[] elementos;
+    private int tope;
+    private int capacidad;
+    private static final int CAPACIDAD_INICIAL = 10;
 
-    /*
-      Constructor que inicializa la pila vacía
+    /**
+     * Constructor que inicializa la pila vacía
      */
     public Pila() {
-        this.elementos = new ArrayList<>();
+        this.capacidad = CAPACIDAD_INICIAL;
+        this.elementos = new Object[capacidad];
+        this.tope = -1;
     }
 
-    /*
-      Agrega un elemento a la parte superior de la pila (push)
-      @param elemento El elemento a agregar
+    /**
+     * Agrega un elemento a la parte superior de la pila (push)
+     * @param elemento El elemento a agregar
      */
     public void push(T elemento) {
-        elementos.add(elemento);
+        if (tope >= capacidad - 1) {
+            redimensionar();
+        }
+        tope++;
+        elementos[tope] = elemento;
     }
 
-    /*
-      Elimina y retorna el elemento en la parte superior de la pila (pop)
-      @return El elemento eliminado, o null si la pila está vacía
+    /**
+     * Elimina y retorna el elemento en la parte superior de la pila (pop)
+     * @return El elemento eliminado, o null si la pila está vacía
      */
+    @SuppressWarnings("unchecked")
     public T pop() {
         if (estaVacia()) {
             return null;
         }
-        return elementos.remove(elementos.size() - 1);
+        T elemento = (T) elementos[tope];
+        elementos[tope] = null;
+        tope--;
+        return elemento;
     }
 
-    /*
-      Retorna el elemento en la parte superior sin eliminarlo (peek)
-      @return El elemento en la cima, o null si la pila está vacía
+    /**
+     * Retorna el elemento en la parte superior sin eliminarlo (peek)
+     * @return El elemento en la cima, o null si la pila está vacía
      */
+    @SuppressWarnings("unchecked")
     public T peek() {
         if (estaVacia()) {
             return null;
         }
-        return elementos.get(elementos.size() - 1);
+        return (T) elementos[tope];
     }
 
-    /*
-      Verifica si la pila está vacía
-      @return true si la pila está vacía, false en caso contrario
+    /**
+     * Verifica si la pila está vacía
+     * @return true si la pila está vacía, false en caso contrario
      */
     public boolean estaVacia() {
-        return elementos.isEmpty();
+        return tope == -1;
     }
 
-    /*
-      Retorna el tamaño de la pila
-     @return Número de elementos en la pila
+    /**
+     * Retorna el tamaño de la pila
+     * @return Número de elementos en la pila
      */
     public int tamanio() {
-        return elementos.size();
+        return tope + 1;
     }
 
-    /*
-      Obtiene todos los elementos de la pila (sin modificar la pila)
-      @return Lista con todos los elementos
+    /**
+     * Obtiene todos los elementos de la pila (sin modificar la pila)
+     * @return Lista con todos los elementos
      */
-    public List<T> obtenerTodos() {
-        return new ArrayList<>(elementos);
+    public Lista<T> obtenerTodos() {
+        Lista<T> resultado = new Lista<>();
+        for (int i = 0; i <= tope; i++) {
+            @SuppressWarnings("unchecked")
+            T elemento = (T) elementos[i];
+            resultado.agregar(elemento);
+        }
+        return resultado;
     }
 
-    /*
-      Limpia todos los elementos de la pila
+    /**
+     * Limpia todos los elementos de la pila
      */
     public void limpiar() {
-        elementos.clear();
+        for (int i = 0; i <= tope; i++) {
+            elementos[i] = null;
+        }
+        tope = -1;
+    }
+
+    /**
+     * Redimensiona el array interno cuando se llena
+     * Duplica la capacidad actual
+     */
+    private void redimensionar() {
+        int nuevaCapacidad = capacidad * 2;
+        Object[] nuevoArray = new Object[nuevaCapacidad];
+        for (int i = 0; i <= tope; i++) {
+            nuevoArray[i] = elementos[i];
+        }
+        elementos = nuevoArray;
+        capacidad = nuevaCapacidad;
     }
 }
 

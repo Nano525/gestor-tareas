@@ -87,6 +87,26 @@
         <div class="empty-message">No hay tareas en la cola.</div>
       </div>
     </div>
+
+    <!-- Sección: Árbol Binario - Organización por Prioridad -->
+    <div class="section">
+      <h2>🌳 Árbol Binario - Organización por Prioridad</h2>
+      <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">
+        Estructura que clasifica y organiza elementos según su nivel de prioridad (ALTA > MEDIA > BAJA)
+      </p>
+
+      <div class="actions-buttons">
+        <button onclick="cargarArbolInorden()">🔄 Ver Inorden</button>
+        <button onclick="cargarArbolPreorden()">🔄 Ver Preorden</button>
+        <button onclick="cargarArbolPostorden()">🔄 Ver Postorden</button>
+        <button onclick="cargarArbolTodas()">📋 Ver Todas</button>
+      </div>
+
+      <h3>Tareas en el Árbol</h3>
+      <div class="tareas-list" id="arbolTareas">
+        <div class="empty-message">No hay tareas en el árbol. Agrega tareas para verlas organizadas por prioridad.</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -98,6 +118,7 @@
     cargarTareas();
     cargarHistorial();
     cargarCola();
+    cargarArbolTodas();
     actualizarEstadisticas();
   };
 
@@ -128,6 +149,7 @@
         cargarTareas();
         cargarHistorial();
         cargarCola();
+        cargarArbolTodas();
         actualizarEstadisticas();
         alert('✅ Tarea agregada correctamente');
       } else {
@@ -142,7 +164,9 @@
   async function cargarTareas() {
     try {
       const response = await fetch(`${API_BASE}/tareas`);
-      const tareas = await response.json();
+      const data = await response.json();
+      // Convertir Lista a array si es necesario
+      const tareas = Array.isArray(data) ? data : (data.obtenerTodos ? data.obtenerTodos() : Object.values(data));
       mostrarTareas(tareas);
     } catch (error) {
       console.error('Error al cargar tareas:', error);
@@ -151,13 +175,16 @@
 
   function mostrarTareas(tareas) {
     const container = document.getElementById('listaTareas');
+    
+    // Convertir a array si es necesario (para compatibilidad con Lista)
+    const tareasArray = Array.isArray(tareas) ? tareas : Object.values(tareas);
 
-    if (tareas.length === 0) {
+    if (!tareasArray || tareasArray.length === 0) {
       container.innerHTML = '<div class="empty-message">No hay tareas. Agrega una nueva tarea para comenzar.</div>';
       return;
     }
 
-    container.innerHTML = tareas.map(tarea => `
+    container.innerHTML = tareasArray.map(tarea => `
                 <div class="tarea-item ${tarea.estado === 'COMPLETADA' ? 'completada' : tarea.estado === 'EN_PROGRESO' ? 'en-progreso' : ''}">
                     <div class="tarea-header">
                         <div class="tarea-titulo">${tarea.titulo}</div>
@@ -245,7 +272,8 @@
   async function cargarHistorial() {
     try {
       const response = await fetch(`${API_BASE}/historial`);
-      const historial = await response.json();
+      const data = await response.json();
+      const historial = Array.isArray(data) ? data : (data.obtenerTodos ? data.obtenerTodos() : Object.values(data));
       mostrarHistorial(historial);
     } catch (error) {
       console.error('Error al cargar historial:', error);
@@ -254,14 +282,15 @@
 
   function mostrarHistorial(historial) {
     const container = document.getElementById('historialAcciones');
+    const historialArray = Array.isArray(historial) ? historial : Object.values(historial);
 
-    if (historial.length === 0) {
+    if (!historialArray || historialArray.length === 0) {
       container.innerHTML = '<div class="empty-message">No hay acciones registradas aún.</div>';
       return;
     }
 
     // Mostrar en orden inverso (último primero, como LIFO)
-    const historialInvertido = [...historial].reverse();
+    const historialInvertido = [...historialArray].reverse();
     container.innerHTML = historialInvertido.map(accion => {
       const fecha = new Date(accion.fechaHora).toLocaleString('es-ES');
       return `
@@ -319,7 +348,8 @@
   async function cargarCola() {
     try {
       const response = await fetch(`${API_BASE}/cola`);
-      const tareas = await response.json();
+      const data = await response.json();
+      const tareas = Array.isArray(data) ? data : (data.obtenerTodos ? data.obtenerTodos() : Object.values(data));
       mostrarCola(tareas);
     } catch (error) {
       console.error('Error al cargar cola:', error);
@@ -328,13 +358,14 @@
 
   function mostrarCola(tareas) {
     const container = document.getElementById('colaTareas');
+    const tareasArray = Array.isArray(tareas) ? tareas : Object.values(tareas);
 
-    if (tareas.length === 0) {
+    if (!tareasArray || tareasArray.length === 0) {
       container.innerHTML = '<div class="empty-message">No hay tareas en la cola.</div>';
       return;
     }
 
-    container.innerHTML = tareas.map((tarea, index) => `
+    container.innerHTML = tareasArray.map((tarea, index) => `
                 <div class="cola-item">
                     <div style="font-weight: bold; margin-bottom: 5px;">
                         #${index + 1} - ${tarea.titulo}
@@ -349,8 +380,9 @@
   async function verSiguienteTarea() {
     try {
       const response = await fetch(`${API_BASE}/cola`);
-      const tareas = await response.json();
-      if (tareas.length === 0) {
+      const data = await response.json();
+      const tareas = Array.isArray(data) ? data : (data.obtenerTodos ? data.obtenerTodos() : Object.values(data));
+      if (!tareas || tareas.length === 0) {
         alert('No hay tareas en la cola');
         return;
       }
@@ -400,6 +432,82 @@
 
   // Actualizar estadísticas cada 5 segundos
   setInterval(actualizarEstadisticas, 5000);
+
+  // ========== FUNCIONES PARA ÁRBOL BINARIO ==========
+
+  async function cargarArbolInorden() {
+    try {
+      const response = await fetch(`${API_BASE}/arbol/inorden`);
+      const data = await response.json();
+      const tareas = Array.isArray(data) ? data : (data.obtenerTodos ? data.obtenerTodos() : Object.values(data));
+      mostrarArbol(tareas, 'Inorden');
+    } catch (error) {
+      console.error('Error al cargar árbol inorden:', error);
+    }
+  }
+
+  async function cargarArbolPreorden() {
+    try {
+      const response = await fetch(`${API_BASE}/arbol/preorden`);
+      const data = await response.json();
+      const tareas = Array.isArray(data) ? data : (data.obtenerTodos ? data.obtenerTodos() : Object.values(data));
+      mostrarArbol(tareas, 'Preorden');
+    } catch (error) {
+      console.error('Error al cargar árbol preorden:', error);
+    }
+  }
+
+  async function cargarArbolPostorden() {
+    try {
+      const response = await fetch(`${API_BASE}/arbol/postorden`);
+      const data = await response.json();
+      const tareas = Array.isArray(data) ? data : (data.obtenerTodos ? data.obtenerTodos() : Object.values(data));
+      mostrarArbol(tareas, 'Postorden');
+    } catch (error) {
+      console.error('Error al cargar árbol postorden:', error);
+    }
+  }
+
+  async function cargarArbolTodas() {
+    try {
+      const response = await fetch(`${API_BASE}/arbol/tareas`);
+      const data = await response.json();
+      const tareas = Array.isArray(data) ? data : (data.obtenerTodos ? data.obtenerTodos() : Object.values(data));
+      mostrarArbol(tareas, 'Todas (Inorden)');
+    } catch (error) {
+      console.error('Error al cargar árbol:', error);
+    }
+  }
+
+  function mostrarArbol(tareas, tipoRecorrido) {
+    const container = document.getElementById('arbolTareas');
+    const tareasArray = Array.isArray(tareas) ? tareas : Object.values(tareas);
+
+    if (!tareasArray || tareasArray.length === 0) {
+      container.innerHTML = '<div class="empty-message">No hay tareas en el árbol. Agrega tareas para verlas organizadas por prioridad.</div>';
+      return;
+    }
+
+    container.innerHTML = `
+      <div style="margin-bottom: 10px; font-weight: bold; color: #667eea;">
+        Recorrido: ${tipoRecorrido} (${tareasArray.length} tareas)
+      </div>
+      ${tareasArray.map((tarea, index) => `
+        <div class="tarea-item ${tarea.estado === 'COMPLETADA' ? 'completada' : tarea.estado === 'EN_PROGRESO' ? 'en-progreso' : ''}">
+          <div class="tarea-header">
+            <div class="tarea-titulo">#${index + 1} - ${tarea.titulo}</div>
+            <span class="tarea-prioridad prioridad-${tarea.prioridad.toLowerCase()}">
+              ${tarea.prioridad}
+            </span>
+          </div>
+          <div style="color: #666; margin-bottom: 5px;">${tarea.descripcion || 'Sin descripción'}</div>
+          <span class="tarea-estado estado-${tarea.estado.toLowerCase().replace('_', '-')}">
+            ${tarea.estado.replace('_', ' ')}
+          </span>
+        </div>
+      `).join('')}
+    `;
+  }
 </script>
 </body>
 </html>

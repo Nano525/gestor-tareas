@@ -2,15 +2,13 @@ package mx.edu.utez.gestor_tareas.controller;
 
 import mx.edu.utez.gestor_tareas.model.Accion;
 import mx.edu.utez.gestor_tareas.model.Tarea;
+import mx.edu.utez.gestor_tareas.model.TareaRequest;
 import mx.edu.utez.gestor_tareas.Service.TareaService;
+import mx.edu.utez.gestor_tareas.util.RespuestaSimple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Controlador que maneja las peticiones HTTP para la gestión de tareas.
@@ -37,8 +35,8 @@ public class TareaController {
      */
     @GetMapping("/api/tareas")
     @ResponseBody
-    public ResponseEntity<List<Tarea>> obtenerTodasLasTareas() {
-        return ResponseEntity.ok(tareaService.obtenerTodasLasTareas());
+    public ResponseEntity<Object[]> obtenerTodasLasTareas() {
+        return ResponseEntity.ok(tareaService.obtenerTodasLasTareas().obtenerTodos());
     }
 
     /**
@@ -59,10 +57,10 @@ public class TareaController {
      */
     @PostMapping("/api/tareas")
     @ResponseBody
-    public ResponseEntity<Tarea> crearTarea(@RequestBody Map<String, String> request) {
-        String titulo = request.get("titulo");
-        String descripcion = request.get("descripcion");
-        Tarea.Prioridad prioridad = Tarea.Prioridad.valueOf(request.get("prioridad").toUpperCase());
+    public ResponseEntity<Tarea> crearTarea(@RequestBody TareaRequest request) {
+        String titulo = request.getTitulo();
+        String descripcion = request.getDescripcion();
+        Tarea.Prioridad prioridad = Tarea.Prioridad.valueOf(request.getPrioridad().toUpperCase());
         
         Tarea nuevaTarea = tareaService.agregarTarea(titulo, descripcion, prioridad);
         return ResponseEntity.ok(nuevaTarea);
@@ -73,11 +71,11 @@ public class TareaController {
      */
     @PutMapping("/api/tareas/{id}")
     @ResponseBody
-    public ResponseEntity<Tarea> actualizarTarea(@PathVariable Long id, @RequestBody Map<String, String> request) {
-        String titulo = request.get("titulo");
-        String descripcion = request.get("descripcion");
-        Tarea.Prioridad prioridad = Tarea.Prioridad.valueOf(request.get("prioridad").toUpperCase());
-        Tarea.Estado estado = Tarea.Estado.valueOf(request.get("estado").toUpperCase());
+    public ResponseEntity<Tarea> actualizarTarea(@PathVariable Long id, @RequestBody TareaRequest request) {
+        String titulo = request.getTitulo();
+        String descripcion = request.getDescripcion();
+        Tarea.Prioridad prioridad = Tarea.Prioridad.valueOf(request.getPrioridad().toUpperCase());
+        Tarea.Estado estado = Tarea.Estado.valueOf(request.getEstado().toUpperCase());
         
         Tarea tareaActualizada = tareaService.actualizarTarea(id, titulo, descripcion, prioridad, estado);
         if (tareaActualizada != null) {
@@ -91,14 +89,14 @@ public class TareaController {
      */
     @DeleteMapping("/api/tareas/{id}")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> eliminarTarea(@PathVariable Long id) {
+    public ResponseEntity<RespuestaSimple> eliminarTarea(@PathVariable Long id) {
         boolean eliminada = tareaService.eliminarTarea(id);
-        Map<String, String> respuesta = new HashMap<>();
+        RespuestaSimple respuesta = new RespuestaSimple();
         if (eliminada) {
-            respuesta.put("mensaje", "Tarea eliminada correctamente");
+            respuesta.setMensaje("Tarea eliminada correctamente");
             return ResponseEntity.ok(respuesta);
         }
-        respuesta.put("mensaje", "Tarea no encontrada");
+        respuesta.setMensaje("Tarea no encontrada");
         return ResponseEntity.notFound().build();
     }
 
@@ -120,8 +118,8 @@ public class TareaController {
      */
     @GetMapping("/api/tareas/buscar")
     @ResponseBody
-    public ResponseEntity<List<Tarea>> buscarTareas(@RequestParam String titulo) {
-        return ResponseEntity.ok(tareaService.buscarTareasPorTitulo(titulo));
+    public ResponseEntity<Object[]> buscarTareas(@RequestParam String titulo) {
+        return ResponseEntity.ok(tareaService.buscarTareasPorTitulo(titulo).obtenerTodos());
     }
 
     // ========== ENDPOINTS PARA PILA (HISTORIAL) ==========
@@ -131,8 +129,8 @@ public class TareaController {
      */
     @GetMapping("/api/historial")
     @ResponseBody
-    public ResponseEntity<List<Accion>> obtenerHistorial() {
-        return ResponseEntity.ok(tareaService.obtenerHistorial());
+    public ResponseEntity<Object[]> obtenerHistorial() {
+        return ResponseEntity.ok(tareaService.obtenerHistorial().obtenerTodos());
     }
 
     /**
@@ -168,8 +166,8 @@ public class TareaController {
      */
     @GetMapping("/api/cola")
     @ResponseBody
-    public ResponseEntity<List<Tarea>> obtenerTareasEnCola() {
-        return ResponseEntity.ok(tareaService.obtenerTareasEnCola());
+    public ResponseEntity<Object[]> obtenerTareasEnCola() {
+        return ResponseEntity.ok(tareaService.obtenerTareasEnCola().obtenerTodos());
     }
 
     /**
@@ -190,10 +188,39 @@ public class TareaController {
      */
     @GetMapping("/api/estadisticas")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> obtenerEstadisticas() {
-        Map<String, String> stats = new HashMap<>();
-        stats.put("estadisticas", tareaService.obtenerEstadisticas());
+    public ResponseEntity<RespuestaSimple> obtenerEstadisticas() {
+        RespuestaSimple stats = new RespuestaSimple();
+        stats.setEstadisticas(tareaService.obtenerEstadisticas());
         return ResponseEntity.ok(stats);
+    }
+
+    // ========== ENDPOINTS PARA ÁRBOL BINARIO ==========
+
+    /**
+     * Obtiene las tareas del árbol en orden inorden (GET /api/arbol/inorden)
+     */
+    @GetMapping("/api/arbol/inorden")
+    @ResponseBody
+    public ResponseEntity<Object[]> obtenerArbolInorden() {
+        return ResponseEntity.ok(tareaService.obtenerTareasInorden().obtenerTodos());
+    }
+
+    @GetMapping("/api/arbol/preorden")
+    @ResponseBody
+    public ResponseEntity<Object[]> obtenerArbolPreorden() {
+        return ResponseEntity.ok(tareaService.obtenerTareasPreorden().obtenerTodos());
+    }
+
+    @GetMapping("/api/arbol/postorden")
+    @ResponseBody
+    public ResponseEntity<Object[]> obtenerArbolPostorden() {
+        return ResponseEntity.ok(tareaService.obtenerTareasPostorden().obtenerTodos());
+    }
+
+    @GetMapping("/api/arbol/tareas")
+    @ResponseBody
+    public ResponseEntity<Object[]> obtenerTodasLasTareasDelArbol() {
+        return ResponseEntity.ok(tareaService.obtenerTodasLasTareasDelArbol().obtenerTodos());
     }
 }
 
