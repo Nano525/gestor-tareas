@@ -8,6 +8,11 @@
 </head>
 <body>
 <div class="container">
+  <div style="text-align: right; margin-bottom: 20px; padding: 10px; background: white; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <span>👤 <strong th:text="${usuarioNombre}">Usuario</strong></span>
+    <a href="/logout" style="margin-left: 15px; color: #f5576c; text-decoration: none; font-weight: bold;">Cerrar Sesión</a>
+  </div>
+
   <h1>📋 Sistema de Gestión de Tareas</h1>
 
   <div class="stats-bar" id="estadisticas">

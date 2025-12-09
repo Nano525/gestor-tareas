@@ -8,7 +8,10 @@ import mx.edu.utez.gestor_tareas.util.RespuestaSimple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Controlador que maneja las peticiones HTTP para la gestión de tareas.
@@ -24,7 +27,11 @@ public class TareaController {
      * Muestra la página principal de la aplicación
      */
     @GetMapping("/")
-    public String index() {
+    public String index(HttpSession session, Model model) {
+        if (session.getAttribute("usuario") == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioNombre", session.getAttribute("usuarioNombre"));
         return "index";
     }
 
