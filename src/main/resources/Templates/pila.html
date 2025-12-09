@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pila - Historial - Gestor de Tareas</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css?v=3.0}">
+    <style>
+        .sidebar { background: #1a202c !important; }
+        body { background: #f0f4f8 !important; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>📋 Gestor Tareas</h2>
+                <div class="user-info">
+                    <span>👤 <strong th:text="${usuarioNombre}">Usuario</strong></span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="/dashboard" class="nav-item">
+                    <span>🏠</span> <span>Dashboard</span>
+                </a>
+                <a href="/agregar-tarea" class="nav-item">
+                    <span>➕</span> <span>Agregar Tarea</span>
+                </a>
+                <a href="/pila" class="nav-item active">
+                    <span>📚</span> <span>Pila (Historial)</span>
+                </a>
+                <a href="/cola" class="nav-item">
+                    <span>🔄</span> <span>Cola (FIFO)</span>
+                </a>
+                <a href="/arbol" class="nav-item">
+                    <span>🌳</span> <span>Árbol Binario</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="/logout" class="logout-btn">🚪 Cerrar Sesión</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-wrapper">
+                <div class="page-header">
+                    <h1>📚 Pila (LIFO) - Historial de Acciones</h1>
+                    <p>El último elemento ingresado es el primero en salir (Last In, First Out)</p>
+                </div>
+
+                <div class="section">
+                    <div class="info-box">
+                        <strong>📖 ¿Qué es una Pila?</strong>
+                        <p>Una pila es una estructura de datos LIFO (Last In, First Out) donde el último elemento agregado es el primero en ser removido. Similar a una pila de platos.</p>
+                    </div>
+
+                    <div class="actions-buttons">
+                        <button onclick="cargarHistorial()">🔄 Actualizar Historial</button>
+                        <button class="btn-info" onclick="verUltimaAccion()">👁️ Ver Última Acción</button>
+                        <button class="btn-danger" onclick="deshacerAccion()">↩️ Deshacer Última Acción</button>
+                    </div>
+
+                    <h3>Historial Completo</h3>
+                    <div class="tareas-list" id="historialAcciones" style="max-height: 500px;">
+                        <div class="empty-message">Cargando historial...</div>
+                    </div>
+                </div>
+
+                <script>
+                    const API_BASE = '/api';
+
+                    window.onload = function() {
+                        cargarHistorial();
+                    };
+
+                    async function cargarHistorial() {
+                        try {
+                            const response = await fetch(`${API_BASE}/historial`);
+                            const data = await response.json();
+                            const historial = Array.isArray(data) ? data : Object.values(data);
+                            mostrarHistorial(historial);
+                        } catch (error) {
+                            console.error('Error al cargar historial:', error);
+                        }
+                    }
+
+                    function mostrarHistorial(historial) {
+                        const container = document.getElementById('historialAcciones');
+                        const historialArray = Array.isArray(historial) ? historial : Object.values(historial);
+
+                        if (!historialArray || historialArray.length === 0) {
+                            container.innerHTML = '<div class="empty-message">No hay acciones registradas aún.</div>';
+                            return;
+                        }
+
+                        const historialInvertido = [...historialArray].reverse();
+                        container.innerHTML = historialInvertido.map((accion, index) => {
+                            const fecha = new Date(accion.fechaHora).toLocaleString('es-ES');
+                            return `
+                                <div class="historial-item">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            <strong style="color: #667eea;">${accion.tipo}</strong>: ${accion.descripcion}
+                                            <div style="color: #999; font-size: 0.8em; margin-top: 5px;">${fecha}</div>
+                                        </div>
+                                        <span style="background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.8em;">
+                                            #${historialArray.length - index}
+                                        </span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+
+                    async function verUltimaAccion() {
+                        try {
+                            const response = await fetch(`${API_BASE}/historial/ultima`);
+                            if (response.status === 204) {
+                                alert('No hay acciones en el historial');
+                                return;
+                            }
+                            const accion = await response.json();
+                            const fecha = new Date(accion.fechaHora).toLocaleString('es-ES');
+                            alert(`Última acción:\n${accion.tipo}: ${accion.descripcion}\nFecha: ${fecha}`);
+                        } catch (error) {
+                            console.error('Error:', error);
+                        }
+                    }
+
+                    async function deshacerAccion() {
+                        if (!confirm('¿Deshacer la última acción?')) return;
+
+                        try {
+                            const response = await fetch(`${API_BASE}/historial/deshacer`, {
+                                method: 'POST'
+                            });
+
+                            if (response.status === 204) {
+                                alert('No hay acciones para deshacer');
+                                return;
+                            }
+
+                            if (response.ok) {
+                                const accion = await response.json();
+                                cargarHistorial();
+                                alert(`✅ Acción deshecha: ${accion.tipo} - ${accion.descripcion}`);
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            alert('Error al deshacer la acción');
+                        }
+                    }
+                </script>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

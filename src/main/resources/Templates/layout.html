@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${titulo} + ' - Gestor de Tareas'">Gestor de Tareas</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>📋 Gestor Tareas</h2>
+                <div class="user-info">
+                    <span>👤 <strong th:text="${usuarioNombre}">Usuario</strong></span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="/dashboard" class="nav-item" th:classappend="${activePage == 'dashboard'} ? 'active'">
+                    <span>🏠</span> Dashboard
+                </a>
+                <a href="/agregar-tarea" class="nav-item" th:classappend="${activePage == 'agregar'} ? 'active'">
+                    <span>➕</span> Agregar Tarea
+                </a>
+                <a href="/pila" class="nav-item" th:classappend="${activePage == 'pila'} ? 'active'">
+                    <span>📚</span> Pila (Historial)
+                </a>
+                <a href="/cola" class="nav-item" th:classappend="${activePage == 'cola'} ? 'active'">
+                    <span>🔄</span> Cola (FIFO)
+                </a>
+                <a href="/arbol" class="nav-item" th:classappend="${activePage == 'arbol'} ? 'active'">
+                    <span>🌳</span> Árbol Binario
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="/logout" class="logout-btn">🚪 Cerrar Sesión</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-wrapper">
+                <th:block th:fragment="content">
+                    <!-- Contenido será reemplazado por cada página -->
+                </th:block>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

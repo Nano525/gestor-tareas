@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cola - FIFO - Gestor de Tareas</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css?v=3.0}">
+    <style>
+        .sidebar { background: #1a202c !important; }
+        body { background: #f0f4f8 !important; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>📋 Gestor Tareas</h2>
+                <div class="user-info">
+                    <span>👤 <strong th:text="${usuarioNombre}">Usuario</strong></span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="/dashboard" class="nav-item">
+                    <span>🏠</span> <span>Dashboard</span>
+                </a>
+                <a href="/agregar-tarea" class="nav-item">
+                    <span>➕</span> <span>Agregar Tarea</span>
+                </a>
+                <a href="/pila" class="nav-item">
+                    <span>📚</span> <span>Pila (Historial)</span>
+                </a>
+                <a href="/cola" class="nav-item active">
+                    <span>🔄</span> <span>Cola (FIFO)</span>
+                </a>
+                <a href="/arbol" class="nav-item">
+                    <span>🌳</span> <span>Árbol Binario</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="/logout" class="logout-btn">🚪 Cerrar Sesión</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-wrapper">
+                <div class="page-header">
+                    <h1>🔄 Cola (FIFO) - Tareas Pendientes</h1>
+                    <p>El primer elemento ingresado es el primero en salir (First In, First Out)</p>
+                </div>
+
+                <div class="section">
+                    <div class="info-box">
+                        <strong>📖 ¿Qué es una Cola?</strong>
+                        <p>Una cola es una estructura de datos FIFO (First In, First Out) donde el primer elemento agregado es el primero en ser procesado. Similar a una fila en un banco.</p>
+                    </div>
+
+                    <div class="actions-buttons">
+                        <button onclick="cargarCola()">🔄 Actualizar Cola</button>
+                        <button class="btn-info" onclick="verSiguienteTarea()">👁️ Ver Siguiente</button>
+                        <button class="btn-success" onclick="procesarSiguiente()">✅ Procesar Siguiente</button>
+                    </div>
+
+                    <h3>Tareas en Cola</h3>
+                    <div class="tareas-list" id="colaTareas" style="max-height: 500px;">
+                        <div class="empty-message">Cargando cola...</div>
+                    </div>
+                </div>
+
+                <script>
+                    const API_BASE = '/api';
+
+                    window.onload = function() {
+                        cargarCola();
+                    };
+
+                    async function cargarCola() {
+                        try {
+                            const response = await fetch(`${API_BASE}/cola`);
+                            const data = await response.json();
+                            const tareas = Array.isArray(data) ? data : Object.values(data);
+                            mostrarCola(tareas);
+                        } catch (error) {
+                            console.error('Error al cargar cola:', error);
+                        }
+                    }
+
+                    function mostrarCola(tareas) {
+                        const container = document.getElementById('colaTareas');
+                        const tareasArray = Array.isArray(tareas) ? tareas : Object.values(tareas);
+
+                        if (!tareasArray || tareasArray.length === 0) {
+                            container.innerHTML = '<div class="empty-message">No hay tareas en la cola.</div>';
+                            return;
+                        }
+
+                        container.innerHTML = tareasArray.map((tarea, index) => `
+                            <div class="cola-item ${index === 0 ? 'siguiente' : ''}">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <div style="font-weight: bold; font-size: 1.1em;">
+                                        #${index + 1} - ${tarea.titulo}
+                                    </div>
+                                    ${index === 0 ? '<span style="background: #43e97b; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.8em;">SIGUIENTE</span>' : ''}
+                                </div>
+                                <div style="color: #666; margin-bottom: 5px;">${tarea.descripcion || 'Sin descripción'}</div>
+                                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                    <span class="tarea-prioridad prioridad-${tarea.prioridad.toLowerCase()}">
+                                        ${tarea.prioridad}
+                                    </span>
+                                    <span class="tarea-estado estado-${tarea.estado.toLowerCase().replace('_', '-')}">
+                                        ${tarea.estado.replace('_', ' ')}
+                                    </span>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+
+                    async function verSiguienteTarea() {
+                        try {
+                            const response = await fetch(`${API_BASE}/cola`);
+                            const data = await response.json();
+                            const tareas = Array.isArray(data) ? data : Object.values(data);
+                            if (!tareas || tareas.length === 0) {
+                                alert('No hay tareas en la cola');
+                                return;
+                            }
+                            const siguiente = tareas[0];
+                            alert(`Siguiente tarea a procesar:\n\n${siguiente.titulo}\nPrioridad: ${siguiente.prioridad}\nEstado: ${siguiente.estado.replace('_', ' ')}`);
+                        } catch (error) {
+                            console.error('Error:', error);
+                        }
+                    }
+
+                    async function procesarSiguiente() {
+                        if (!confirm('¿Procesar la siguiente tarea de la cola?')) return;
+
+                        try {
+                            const response = await fetch(`${API_BASE}/cola/procesar`, {
+                                method: 'POST'
+                            });
+
+                            if (response.status === 204) {
+                                alert('No hay tareas en la cola para procesar');
+                                return;
+                            }
+
+                            if (response.ok) {
+                                const tarea = await response.json();
+                                cargarCola();
+                                alert(`✅ Tarea procesada: ${tarea.titulo}`);
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            alert('Error al procesar la tarea');
+                        }
+                    }
+                </script>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

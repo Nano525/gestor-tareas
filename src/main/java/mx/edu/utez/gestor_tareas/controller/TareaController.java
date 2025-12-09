@@ -24,15 +24,81 @@ public class TareaController {
     private TareaService tareaService;
 
     /**
-     * Muestra la página principal de la aplicación
+     * Redirige a dashboard
      */
     @GetMapping("/")
-    public String index(HttpSession session, Model model) {
+    public String index() {
+        return "redirect:/dashboard";
+    }
+
+    /**
+     * Muestra el dashboard principal
+     */
+    @GetMapping("/dashboard")
+    public String dashboard(HttpSession session, Model model) {
         if (session.getAttribute("usuario") == null) {
             return "redirect:/login";
         }
         model.addAttribute("usuarioNombre", session.getAttribute("usuarioNombre"));
-        return "index";
+        model.addAttribute("titulo", "Dashboard");
+        model.addAttribute("activePage", "dashboard");
+        return "dashboard";
+    }
+
+    /**
+     * Muestra la página de agregar tarea
+     */
+    @GetMapping("/agregar-tarea")
+    public String agregarTarea(HttpSession session, Model model) {
+        if (session.getAttribute("usuario") == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioNombre", session.getAttribute("usuarioNombre"));
+        model.addAttribute("titulo", "Agregar Tarea");
+        model.addAttribute("activePage", "agregar");
+        return "agregar-tarea";
+    }
+
+    /**
+     * Muestra la página de pila (historial)
+     */
+    @GetMapping("/pila")
+    public String pila(HttpSession session, Model model) {
+        if (session.getAttribute("usuario") == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioNombre", session.getAttribute("usuarioNombre"));
+        model.addAttribute("titulo", "Pila - Historial");
+        model.addAttribute("activePage", "pila");
+        return "pila";
+    }
+
+    /**
+     * Muestra la página de cola
+     */
+    @GetMapping("/cola")
+    public String cola(HttpSession session, Model model) {
+        if (session.getAttribute("usuario") == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioNombre", session.getAttribute("usuarioNombre"));
+        model.addAttribute("titulo", "Cola - FIFO");
+        model.addAttribute("activePage", "cola");
+        return "cola";
+    }
+
+    /**
+     * Muestra la página de árbol binario
+     */
+    @GetMapping("/arbol")
+    public String arbol(HttpSession session, Model model) {
+        if (session.getAttribute("usuario") == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioNombre", session.getAttribute("usuarioNombre"));
+        model.addAttribute("titulo", "Árbol Binario");
+        model.addAttribute("activePage", "arbol");
+        return "arbol";
     }
 
     // ========== ENDPOINTS REST PARA LISTA/ARREGLO ==========

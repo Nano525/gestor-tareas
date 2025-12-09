@@ -129,13 +129,18 @@ public class TareaService {
     }
 
     /**
-     * Marca una tarea como completada
+     * Marca una tarea como completada y la elimina automáticamente
      */
     public Tarea completarTarea(Long id) {
         Tarea tarea = buscarTareaPorId(id);
         if (tarea != null) {
+            String tituloTarea = tarea.getTitulo();
             tarea.setEstado(Tarea.Estado.COMPLETADA);
-            historialAcciones.push(new Accion("COMPLETAR", "Tarea completada: " + tarea.getTitulo()));
+            historialAcciones.push(new Accion("COMPLETAR", "Tarea completada: " + tituloTarea));
+            
+            eliminarTarea(id);
+            historialAcciones.push(new Accion("ELIMINAR", "Tarea completada eliminada automáticamente: " + tituloTarea));
+            
             return tarea;
         }
         return null;

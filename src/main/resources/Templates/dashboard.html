@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Gestor de Tareas</title>
+    <link rel="stylesheet" href="/css/styles.css?v=3.0">
+    <style>
+        /* Forzar estilos si el CSS no carga */
+        .sidebar { background: #1a202c !important; }
+        body { background: #f0f4f8 !important; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>📋 Gestor Tareas</h2>
+                <div class="user-info">
+                    <span>👤 <strong th:text="${usuarioNombre}">Usuario</strong></span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="/dashboard" class="nav-item active">
+                    <span>🏠</span> <span>Dashboard</span>
+                </a>
+                <a href="/agregar-tarea" class="nav-item">
+                    <span>➕</span> <span>Agregar Tarea</span>
+                </a>
+                <a href="/pila" class="nav-item">
+                    <span>📚</span> <span>Pila (Historial)</span>
+                </a>
+                <a href="/cola" class="nav-item">
+                    <span>🔄</span> <span>Cola (FIFO)</span>
+                </a>
+                <a href="/arbol" class="nav-item">
+                    <span>🌳</span> <span>Árbol Binario</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="/logout" class="logout-btn">🚪 Cerrar Sesión</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-wrapper">
+                <div class="page-header">
+                    <h1>🏠 Dashboard</h1>
+                    <p>Vista general del sistema de gestión de tareas</p>
+                </div>
+
+                <div class="stats-bar" id="estadisticas">
+                    Cargando estadísticas...
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>📝 Tareas Activas</h3>
+                        <div class="tareas-list" id="tareasActivas" style="max-height: 300px;">
+                            <div class="empty-message">Cargando tareas...</div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>📊 Resumen Rápido</h3>
+                        <div id="resumenRapido">
+                            <div class="resumen-item">
+                                <span class="resumen-label">Total de Tareas:</span>
+                                <span class="resumen-value" id="totalTareas">-</span>
+                            </div>
+                            <div class="resumen-item">
+                                <span class="resumen-label">Pendientes:</span>
+                                <span class="resumen-value" id="pendientes">-</span>
+                            </div>
+                            <div class="resumen-item">
+                                <span class="resumen-label">En Progreso:</span>
+                                <span class="resumen-value" id="enProgreso">-</span>
+                            </div>
+                            <div class="resumen-item">
+                                <span class="resumen-label">En Cola:</span>
+                                <span class="resumen-value" id="enCola">-</span>
+                            </div>
+                            <div class="resumen-item">
+                                <span class="resumen-label">Historial:</span>
+                                <span class="resumen-value" id="historial">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    const API_BASE = '/api';
+
+                    window.onload = function() {
+                        cargarTareasActivas();
+                        actualizarEstadisticas();
+                        actualizarResumen();
+                    };
+
+                    async function cargarTareasActivas() {
+                        try {
+                            const response = await fetch(`${API_BASE}/tareas`);
+                            const data = await response.json();
+                            const tareas = Array.isArray(data) ? data : Object.values(data);
+                            mostrarTareasActivas(tareas);
+                        } catch (error) {
+                            console.error('Error:', error);
+                        }
+                    }
+
+                    function mostrarTareasActivas(tareas) {
+                        const container = document.getElementById('tareasActivas');
+                        const tareasArray = Array.isArray(tareas) ? tareas : Object.values(tareas);
+                        const tareasActivas = tareasArray.filter(t => t.estado !== 'COMPLETADA');
+
+                        if (!tareasActivas || tareasActivas.length === 0) {
+                            container.innerHTML = '<div class="empty-message">No hay tareas activas.</div>';
+                            return;
+                        }
+
+                        container.innerHTML = tareasActivas.slice(0, 5).map(tarea => `
+                            <div class="tarea-item-mini ${tarea.estado === 'EN_PROGRESO' ? 'en-progreso' : ''}">
+                                <div class="tarea-header">
+                                    <div class="tarea-titulo">${tarea.titulo}</div>
+                                    <span class="tarea-prioridad prioridad-${tarea.prioridad.toLowerCase()}">
+                                        ${tarea.prioridad}
+                                    </span>
+                                </div>
+                                <span class="tarea-estado estado-${tarea.estado.toLowerCase().replace('_', '-')}">
+                                    ${tarea.estado.replace('_', ' ')}
+                                </span>
+                            </div>
+                        `).join('');
+                    }
+
+                    async function actualizarEstadisticas() {
+                        try {
+                            const response = await fetch(`${API_BASE}/estadisticas`);
+                            const data = await response.json();
+                            document.getElementById('estadisticas').textContent = `📊 ${data.estadisticas}`;
+                        } catch (error) {
+                            console.error('Error:', error);
+                        }
+                    }
+
+                    async function actualizarResumen() {
+                        try {
+                            const response = await fetch(`${API_BASE}/tareas`);
+                            const data = await response.json();
+                            const tareas = Array.isArray(data) ? data : Object.values(data);
+                            
+                            const total = tareas.length;
+                            const pendientes = tareas.filter(t => t.estado === 'PENDIENTE').length;
+                            const enProgreso = tareas.filter(t => t.estado === 'EN_PROGRESO').length;
+                            
+                            const colaResponse = await fetch(`${API_BASE}/cola`);
+                            const colaData = await colaResponse.json();
+                            const cola = Array.isArray(colaData) ? colaData : Object.values(colaData);
+                            const enCola = cola.length;
+                            
+                            const historialResponse = await fetch(`${API_BASE}/historial`);
+                            const historialData = await historialResponse.json();
+                            const historial = Array.isArray(historialData) ? historialData : Object.values(historialData);
+                            const historialCount = historial.length;
+                            
+                            document.getElementById('totalTareas').textContent = total;
+                            document.getElementById('pendientes').textContent = pendientes;
+                            document.getElementById('enProgreso').textContent = enProgreso;
+                            document.getElementById('enCola').textContent = enCola;
+                            document.getElementById('historial').textContent = historialCount;
+                        } catch (error) {
+                            console.error('Error:', error);
+                        }
+                    }
+
+                    setInterval(() => {
+                        cargarTareasActivas();
+                        actualizarEstadisticas();
+                        actualizarResumen();
+                    }, 5000);
+                </script>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
