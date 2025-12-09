@@ -1,10 +1,30 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:fragment="layout (titulo, activePage, content)">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${titulo} + ' - Gestor de Tareas'">Gestor de Tareas</title>
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css?v=3.0}">
+    <style>
+        /* Forzar estilos críticos */
+        .sidebar { 
+            background: #1a202c !important; 
+            width: 300px !important; 
+        }
+        body { 
+            background: #f0f4f8 !important; 
+        }
+        .main-content { 
+            margin-left: 300px !important; 
+            background: #f0f4f8 !important; 
+        }
+        .nav-item { 
+            color: #cbd5e0 !important; 
+        }
+        .nav-item.active {
+            color: #ffffff !important;
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
@@ -18,19 +38,19 @@
             
             <nav class="sidebar-nav">
                 <a href="/dashboard" class="nav-item" th:classappend="${activePage == 'dashboard'} ? 'active'">
-                    <span>🏠</span> Dashboard
+                    <span>🏠</span> <span>Dashboard</span>
                 </a>
                 <a href="/agregar-tarea" class="nav-item" th:classappend="${activePage == 'agregar'} ? 'active'">
-                    <span>➕</span> Agregar Tarea
+                    <span>➕</span> <span>Agregar Tarea</span>
                 </a>
                 <a href="/pila" class="nav-item" th:classappend="${activePage == 'pila'} ? 'active'">
-                    <span>📚</span> Pila (Historial)
+                    <span>📚</span> <span>Pila (Historial)</span>
                 </a>
                 <a href="/cola" class="nav-item" th:classappend="${activePage == 'cola'} ? 'active'">
-                    <span>🔄</span> Cola (FIFO)
+                    <span>🔄</span> <span>Cola (FIFO)</span>
                 </a>
                 <a href="/arbol" class="nav-item" th:classappend="${activePage == 'arbol'} ? 'active'">
-                    <span>🌳</span> Árbol Binario
+                    <span>🌳</span> <span>Árbol Binario</span>
                 </a>
             </nav>
             
@@ -41,7 +61,7 @@
 
         <main class="main-content">
             <div class="content-wrapper">
-                <th:block th:fragment="content">
+                <th:block th:replace="${content}">
                     <!-- Contenido será reemplazado por cada página -->
                 </th:block>
             </div>
