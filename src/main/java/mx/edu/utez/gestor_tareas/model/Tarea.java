@@ -2,11 +2,9 @@ package mx.edu.utez.gestor_tareas.model;
 
 import java.time.LocalDateTime;
 
-/**
- * Modelo que representa una Tarea en el sistema.
- * Contiene la información básica de una tarea: título, descripción,
- * prioridad y estado.
- */
+// Modelo que representa una Tarea en el sistema.
+// Contiene la información básica de una tarea: título, descripción,
+// prioridad y estado.
 public class Tarea {
     private Long id;
     private String titulo;
@@ -89,16 +87,12 @@ public class Tarea {
                 '}';
     }
 
-    /**
-     * Enum para representar las prioridades de una tarea
-     */
+    // Enum para representar las prioridades de una tarea
     public enum Prioridad {
         ALTA, MEDIA, BAJA
     }
 
-    /**
-     * Enum para representar los estados de una tarea
-     */
+    // Enum para representar los estados de una tarea
     public enum Estado {
         PENDIENTE, EN_PROGRESO, COMPLETADA
     }

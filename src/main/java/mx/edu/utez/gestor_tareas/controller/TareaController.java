@@ -13,27 +13,21 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
 
-/**
- * Controlador que maneja las peticiones HTTP para la gestión de tareas.
- * Proporciona endpoints REST y una vista principal.
- */
+// Controlador que maneja las peticiones HTTP para la gestión de tareas.
+// Proporciona endpoints REST y una vista principal.
 @Controller
 public class TareaController {
 
     @Autowired
     private TareaService tareaService;
 
-    /**
-     * Redirige a dashboard
-     */
+    // Redirige a dashboard
     @GetMapping("/")
     public String index() {
         return "redirect:/dashboard";
     }
 
-    /**
-     * Muestra el dashboard principal
-     */
+    // Muestra el dashboard principal
     @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
         if (session.getAttribute("usuario") == null) {
@@ -45,9 +39,7 @@ public class TareaController {
         return "dashboard";
     }
 
-    /**
-     * Muestra la página de agregar tarea
-     */
+    // Muestra la página de agregar tarea
     @GetMapping("/agregar-tarea")
     public String agregarTarea(HttpSession session, Model model) {
         if (session.getAttribute("usuario") == null) {
@@ -59,9 +51,7 @@ public class TareaController {
         return "agregar-tarea";
     }
 
-    /**
-     * Muestra la página de pila (historial)
-     */
+    // Muestra la página de pila (historial)
     @GetMapping("/pila")
     public String pila(HttpSession session, Model model) {
         if (session.getAttribute("usuario") == null) {
@@ -73,9 +63,7 @@ public class TareaController {
         return "pila";
     }
 
-    /**
-     * Muestra la página de cola
-     */
+    // Muestra la página de cola
     @GetMapping("/cola")
     public String cola(HttpSession session, Model model) {
         if (session.getAttribute("usuario") == null) {
@@ -87,9 +75,7 @@ public class TareaController {
         return "cola";
     }
 
-    /**
-     * Muestra la página de árbol binario
-     */
+    // Muestra la página de árbol binario
     @GetMapping("/arbol")
     public String arbol(HttpSession session, Model model) {
         if (session.getAttribute("usuario") == null) {
@@ -103,18 +89,14 @@ public class TareaController {
 
     // ========== ENDPOINTS REST PARA LISTA/ARREGLO ==========
 
-    /**
-     * Obtiene todas las tareas (GET /api/tareas)
-     */
+    // Obtiene todas las tareas (GET /api/tareas)
     @GetMapping("/api/tareas")
     @ResponseBody
     public ResponseEntity<Object[]> obtenerTodasLasTareas() {
         return ResponseEntity.ok(tareaService.obtenerTodasLasTareas().obtenerTodos());
     }
 
-    /**
-     * Obtiene una tarea por ID (GET /api/tareas/{id})
-     */
+    // Obtiene una tarea por ID (GET /api/tareas/{id})
     @GetMapping("/api/tareas/{id}")
     @ResponseBody
     public ResponseEntity<Tarea> obtenerTareaPorId(@PathVariable Long id) {
@@ -125,9 +107,7 @@ public class TareaController {
         return ResponseEntity.notFound().build();
     }
 
-    /**
-     * Crea una nueva tarea (POST /api/tareas)
-     */
+    // Crea una nueva tarea (POST /api/tareas)
     @PostMapping("/api/tareas")
     @ResponseBody
     public ResponseEntity<Tarea> crearTarea(@RequestBody TareaRequest request) {
@@ -139,9 +119,7 @@ public class TareaController {
         return ResponseEntity.ok(nuevaTarea);
     }
 
-    /**
-     * Actualiza una tarea existente (PUT /api/tareas/{id})
-     */
+    // Actualiza una tarea existente (PUT /api/tareas/{id})
     @PutMapping("/api/tareas/{id}")
     @ResponseBody
     public ResponseEntity<Tarea> actualizarTarea(@PathVariable Long id, @RequestBody TareaRequest request) {
@@ -157,9 +135,7 @@ public class TareaController {
         return ResponseEntity.notFound().build();
     }
 
-    /**
-     * Elimina una tarea (DELETE /api/tareas/{id})
-     */
+    // Elimina una tarea (DELETE /api/tareas/{id})
     @DeleteMapping("/api/tareas/{id}")
     @ResponseBody
     public ResponseEntity<RespuestaSimple> eliminarTarea(@PathVariable Long id) {
@@ -173,9 +149,7 @@ public class TareaController {
         return ResponseEntity.notFound().build();
     }
 
-    /**
-     * Marca una tarea como completada (POST /api/tareas/{id}/completar)
-     */
+    // Marca una tarea como completada (POST /api/tareas/{id}/completar)
     @PostMapping("/api/tareas/{id}/completar")
     @ResponseBody
     public ResponseEntity<Tarea> completarTarea(@PathVariable Long id) {
@@ -186,9 +160,7 @@ public class TareaController {
         return ResponseEntity.notFound().build();
     }
 
-    /**
-     * Busca tareas por título (GET /api/tareas/buscar?titulo=...)
-     */
+    // Busca tareas por título (GET /api/tareas/buscar?titulo=...)
     @GetMapping("/api/tareas/buscar")
     @ResponseBody
     public ResponseEntity<Object[]> buscarTareas(@RequestParam String titulo) {
@@ -197,18 +169,14 @@ public class TareaController {
 
     // ========== ENDPOINTS PARA PILA (HISTORIAL) ==========
 
-    /**
-     * Obtiene el historial completo de acciones (GET /api/historial)
-     */
+    // Obtiene el historial completo de acciones (GET /api/historial)
     @GetMapping("/api/historial")
     @ResponseBody
     public ResponseEntity<Object[]> obtenerHistorial() {
         return ResponseEntity.ok(tareaService.obtenerHistorial().obtenerTodos());
     }
 
-    /**
-     * Obtiene la última acción (GET /api/historial/ultima)
-     */
+    // Obtiene la última acción (GET /api/historial/ultima)
     @GetMapping("/api/historial/ultima")
     @ResponseBody
     public ResponseEntity<Accion> obtenerUltimaAccion() {
@@ -219,9 +187,7 @@ public class TareaController {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Deshace la última acción (POST /api/historial/deshacer)
-     */
+    // Deshace la última acción (POST /api/historial/deshacer)
     @PostMapping("/api/historial/deshacer")
     @ResponseBody
     public ResponseEntity<Accion> deshacerUltimaAccion() {
@@ -234,18 +200,14 @@ public class TareaController {
 
     // ========== ENDPOINTS PARA COLA (TAREAS PENDIENTES) ==========
 
-    /**
-     * Obtiene todas las tareas en la cola (GET /api/cola)
-     */
+    // Obtiene todas las tareas en la cola (GET /api/cola)
     @GetMapping("/api/cola")
     @ResponseBody
     public ResponseEntity<Object[]> obtenerTareasEnCola() {
         return ResponseEntity.ok(tareaService.obtenerTareasEnCola().obtenerTodos());
     }
 
-    /**
-     * Procesa la siguiente tarea de la cola (POST /api/cola/procesar)
-     */
+    // Procesa la siguiente tarea de la cola (POST /api/cola/procesar)
     @PostMapping("/api/cola/procesar")
     @ResponseBody
     public ResponseEntity<Tarea> procesarSiguienteTarea() {
@@ -256,9 +218,7 @@ public class TareaController {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Obtiene estadísticas del sistema (GET /api/estadisticas)
-     */
+    // Obtiene estadísticas del sistema (GET /api/estadisticas)
     @GetMapping("/api/estadisticas")
     @ResponseBody
     public ResponseEntity<RespuestaSimple> obtenerEstadisticas() {
@@ -269,9 +229,7 @@ public class TareaController {
 
     // ========== ENDPOINTS PARA ÁRBOL BINARIO ==========
 
-    /**
-     * Obtiene las tareas del árbol en orden inorden (GET /api/arbol/inorden)
-     */
+    // Obtiene las tareas del árbol en orden inorden (GET /api/arbol/inorden)
     @GetMapping("/api/arbol/inorden")
     @ResponseBody
     public ResponseEntity<Object[]> obtenerArbolInorden() {

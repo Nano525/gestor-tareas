@@ -8,13 +8,11 @@ import mx.edu.utez.gestor_tareas.util.Lista;
 import mx.edu.utez.gestor_tareas.util.Pila;
 import org.springframework.stereotype.Service;
 
-/**
- * Servicio que gestiona las tareas utilizando las estructuras de datos:
- * - Lista/Arreglo: Para almacenamiento principal de tareas
- * - Pila: Para historial de acciones (LIFO)
- * - Cola: Para procesar tareas por orden de llegada (FIFO)
- * - Árbol Binario: Para organizar tareas por prioridad
- */
+// Servicio que gestiona las tareas utilizando las estructuras de datos:
+// - Lista/Arreglo: Para almacenamiento principal de tareas
+// - Pila: Para historial de acciones (LIFO)
+// - Cola: Para procesar tareas por orden de llegada (FIFO)
+// - Árbol Binario: Para organizar tareas por prioridad
 @Service
 public class TareaService {
     // Lista/Arreglo: Almacenamiento principal de tareas
@@ -41,10 +39,8 @@ public class TareaService {
 
     // ========== OPERACIONES CON LISTA/ARREGLO ==========
 
-    /**
-     * Agrega una nueva tarea a la lista principal
-     * También la agrega a la cola de pendientes, al árbol binario y registra la acción en la pila
-     */
+    // Agrega una nueva tarea a la lista principal
+    // También la agrega a la cola de pendientes, al árbol binario y registra la acción en la pila
     public Tarea agregarTarea(String titulo, String descripcion, Tarea.Prioridad prioridad) {
         Tarea nuevaTarea = new Tarea(contadorId++, titulo, descripcion, prioridad, Tarea.Estado.PENDIENTE);
         
@@ -56,9 +52,7 @@ public class TareaService {
         return nuevaTarea;
     }
 
-    /**
-     * Elimina una tarea de la lista principal por ID
-     */
+    // Elimina una tarea de la lista principal por ID
     public boolean eliminarTarea(Long id) {
         Tarea tareaEliminada = buscarTareaPorId(id);
         if (tareaEliminada != null) {
@@ -70,9 +64,7 @@ public class TareaService {
         return false;
     }
 
-    /**
-     * Busca una tarea por ID
-     */
+    // Busca una tarea por ID
     public Tarea buscarTareaPorId(Long id) {
         for (int i = 0; i < tareas.tamanio(); i++) {
             Tarea tarea = tareas.obtener(i);
@@ -83,9 +75,7 @@ public class TareaService {
         return null;
     }
 
-    /**
-     * Busca tareas por título
-     */
+    // Busca tareas por título
     public Lista<Tarea> buscarTareasPorTitulo(String titulo) {
         Lista<Tarea> resultado = new Lista<>();
         String tituloLower = titulo.toLowerCase();
@@ -98,16 +88,12 @@ public class TareaService {
         return resultado;
     }
 
-    /**
-     * Obtiene todas las tareas
-     */
+    // Obtiene todas las tareas
     public Lista<Tarea> obtenerTodasLasTareas() {
         return tareas;
     }
 
-    /**
-     * Actualiza una tarea existente
-     */
+    // Actualiza una tarea existente
     public Tarea actualizarTarea(Long id, String titulo, String descripcion, Tarea.Prioridad prioridad, Tarea.Estado estado) {
         Tarea tarea = buscarTareaPorId(id);
         if (tarea != null) {
@@ -128,9 +114,7 @@ public class TareaService {
         return null;
     }
 
-    /**
-     * Marca una tarea como completada y la elimina automáticamente
-     */
+    // Marca una tarea como completada y la elimina automáticamente
     public Tarea completarTarea(Long id) {
         Tarea tarea = buscarTareaPorId(id);
         if (tarea != null) {
@@ -148,67 +132,49 @@ public class TareaService {
 
     // ========== OPERACIONES CON PILA (HISTORIAL) ==========
 
-    /**
-     * Obtiene el historial completo de acciones (sin modificar la pila)
-     */
+    // Obtiene el historial completo de acciones (sin modificar la pila)
     public Lista<Accion> obtenerHistorial() {
         return historialAcciones.obtenerTodos();
     }
 
-    /**
-     * Obtiene la última acción realizada (sin eliminarla)
-     */
+    // Obtiene la última acción realizada (sin eliminarla)
     public Accion obtenerUltimaAccion() {
         return historialAcciones.peek();
     }
 
-    /**
-     * Deshace la última acción (elimina y retorna el último elemento de la pila)
-     */
+    // Deshace la última acción (elimina y retorna el último elemento de la pila)
     public Accion deshacerUltimaAccion() {
         return historialAcciones.pop();
     }
 
-    /**
-     * Obtiene el tamaño del historial
-     */
+    // Obtiene el tamaño del historial
     public int obtenerTamanioHistorial() {
         return historialAcciones.tamanio();
     }
 
     // ========== OPERACIONES CON COLA (TAREAS PENDIENTES) ==========
 
-    /**
-     * Procesa la siguiente tarea pendiente (FIFO - primera en entrar, primera en salir)
-     */
+    // Procesa la siguiente tarea pendiente (FIFO - primera en entrar, primera en salir)
     public Tarea procesarSiguienteTarea() {
         return colaTareasPendientes.desencolar();
     }
 
-    /**
-     * Obtiene la siguiente tarea a procesar sin eliminarla
-     */
+    // Obtiene la siguiente tarea a procesar sin eliminarla
     public Tarea verSiguienteTarea() {
         return colaTareasPendientes.frente();
     }
 
-    /**
-     * Obtiene todas las tareas pendientes en la cola (sin modificar la cola)
-     */
+    // Obtiene todas las tareas pendientes en la cola (sin modificar la cola)
     public Lista<Tarea> obtenerTareasEnCola() {
         return colaTareasPendientes.obtenerTodos();
     }
 
-    /**
-     * Obtiene el tamaño de la cola
-     */
+    // Obtiene el tamaño de la cola
     public int obtenerTamanioCola() {
         return colaTareasPendientes.tamanio();
     }
 
-    /**
-     * Obtiene estadísticas del sistema
-     */
+    // Obtiene estadísticas del sistema
     public String obtenerEstadisticas() {
         int pendientes = 0;
         int enProgreso = 0;
@@ -232,34 +198,26 @@ public class TareaService {
 
     // ========== OPERACIONES CON ÁRBOL BINARIO ==========
 
-    /**
-     * Obtiene las tareas del árbol en orden inorden
-     * @return Lista de tareas ordenadas por prioridad (inorden)
-     */
+    // Obtiene las tareas del árbol en orden inorden
+    // Retorna: Lista de tareas ordenadas por prioridad (inorden)
     public Lista<Tarea> obtenerTareasInorden() {
         return arbolPorPrioridad.recorrerInorden();
     }
 
-    /**
-     * Obtiene las tareas del árbol en orden preorden
-     * @return Lista de tareas ordenadas por prioridad (preorden)
-     */
+    // Obtiene las tareas del árbol en orden preorden
+    // Retorna: Lista de tareas ordenadas por prioridad (preorden)
     public Lista<Tarea> obtenerTareasPreorden() {
         return arbolPorPrioridad.recorrerPreorden();
     }
 
-    /**
-     * Obtiene las tareas del árbol en orden postorden
-     * @return Lista de tareas ordenadas por prioridad (postorden)
-     */
+    // Obtiene las tareas del árbol en orden postorden
+    // Retorna: Lista de tareas ordenadas por prioridad (postorden)
     public Lista<Tarea> obtenerTareasPostorden() {
         return arbolPorPrioridad.recorrerPostorden();
     }
 
-    /**
-     * Obtiene todas las tareas del árbol
-     * @return Lista con todas las tareas del árbol
-     */
+    // Obtiene todas las tareas del árbol
+    // Retorna: Lista con todas las tareas del árbol
     public Lista<Tarea> obtenerTodasLasTareasDelArbol() {
         return arbolPorPrioridad.obtenerTodas();
     }

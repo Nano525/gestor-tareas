@@ -1,8 +1,6 @@
 package mx.edu.utez.gestor_tareas.model;
 
-/**
- * Clase auxiliar para recibir datos del request body en lugar de usar Map<String, String>
- */
+// Clase auxiliar para recibir datos del request body en lugar de usar Map<String, String>
 public class TareaRequest {
     private String titulo;
     private String descripcion;

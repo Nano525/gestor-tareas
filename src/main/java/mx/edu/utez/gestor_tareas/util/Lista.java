@@ -1,36 +1,28 @@
 package mx.edu.utez.gestor_tareas.util;
 
-/**
- * Implementación de una estructura de datos Lista/Arreglo dinámico usando arrays nativos.
- * Permite almacenar, agregar, eliminar, buscar y mostrar elementos.
- * No utiliza clases de java.util.*
- */
+// Implementación de una estructura de datos Lista/Arreglo dinámico usando arrays nativos.
+// Permite almacenar, agregar, eliminar, buscar y mostrar elementos.
+// No utiliza clases de java.util.*
 public class Lista<T> {
     private Object[] elementos;
     private int tamanio;
     private static final int CAPACIDAD_INICIAL = 10;
 
-    /**
-     * Constructor que inicializa la lista vacía con capacidad inicial
-     */
+    // Constructor que inicializa la lista vacía con capacidad inicial
     public Lista() {
         this.elementos = new Object[CAPACIDAD_INICIAL];
         this.tamanio = 0;
     }
 
-    /**
-     * Constructor con capacidad inicial personalizada
-     * @param capacidadInicial Capacidad inicial del array
-     */
+    // Constructor con capacidad inicial personalizada
+    // Parámetro: capacidadInicial - Capacidad inicial del array
     public Lista(int capacidadInicial) {
         this.elementos = new Object[capacidadInicial];
         this.tamanio = 0;
     }
 
-    /**
-     * Agrega un elemento al final de la lista
-     * @param elemento El elemento a agregar
-     */
+    // Agrega un elemento al final de la lista
+    // Parámetro: elemento - El elemento a agregar
     public void agregar(T elemento) {
         if (tamanio >= elementos.length) {
             redimensionar();
@@ -39,11 +31,8 @@ public class Lista<T> {
         tamanio++;
     }
 
-    /**
-     * Agrega un elemento en una posición específica
-     * @param indice Posición donde insertar
-     * @param elemento Elemento a insertar
-     */
+    // Agrega un elemento en una posición específica
+    // Parámetros: indice - Posición donde insertar, elemento - Elemento a insertar
     public void agregar(int indice, T elemento) {
         if (indice < 0 || indice > tamanio) {
             throw new IndexOutOfBoundsException("Índice fuera de rango: " + indice);
@@ -58,11 +47,9 @@ public class Lista<T> {
         tamanio++;
     }
 
-    /**
-     * Elimina un elemento por índice
-     * @param indice Índice del elemento a eliminar
-     * @return El elemento eliminado
-     */
+    // Elimina un elemento por índice
+    // Parámetro: indice - Índice del elemento a eliminar
+    // Retorna: El elemento eliminado
     @SuppressWarnings("unchecked")
     public T eliminar(int indice) {
         if (indice < 0 || indice >= tamanio) {
@@ -77,11 +64,9 @@ public class Lista<T> {
         return elementoEliminado;
     }
 
-    /**
-     * Elimina un elemento por referencia (primera ocurrencia)
-     * @param elemento Elemento a eliminar
-     * @return true si se eliminó, false si no se encontró
-     */
+    // Elimina un elemento por referencia (primera ocurrencia)
+    // Parámetro: elemento - Elemento a eliminar
+    // Retorna: true si se eliminó, false si no se encontró
     public boolean eliminar(T elemento) {
         int indice = buscarIndice(elemento);
         if (indice != -1) {
@@ -91,11 +76,9 @@ public class Lista<T> {
         return false;
     }
 
-    /**
-     * Obtiene un elemento por índice
-     * @param indice Índice del elemento
-     * @return El elemento en esa posición
-     */
+    // Obtiene un elemento por índice
+    // Parámetro: indice - Índice del elemento
+    // Retorna: El elemento en esa posición
     @SuppressWarnings("unchecked")
     public T obtener(int indice) {
         if (indice < 0 || indice >= tamanio) {
@@ -104,11 +87,9 @@ public class Lista<T> {
         return (T) elementos[indice];
     }
 
-    /**
-     * Busca un elemento y retorna su índice
-     * @param elemento Elemento a buscar
-     * @return Índice del elemento o -1 si no se encuentra
-     */
+    // Busca un elemento y retorna su índice
+    // Parámetro: elemento - Elemento a buscar
+    // Retorna: Índice del elemento o -1 si no se encuentra
     public int buscarIndice(T elemento) {
         for (int i = 0; i < tamanio; i++) {
             if (elementos[i] != null && elementos[i].equals(elemento)) {
@@ -118,19 +99,15 @@ public class Lista<T> {
         return -1;
     }
 
-    /**
-     * Busca un elemento y retorna true si existe
-     * @param elemento Elemento a buscar
-     * @return true si existe, false en caso contrario
-     */
+    // Busca un elemento y retorna true si existe
+    // Parámetro: elemento - Elemento a buscar
+    // Retorna: true si existe, false en caso contrario
     public boolean contiene(T elemento) {
         return buscarIndice(elemento) != -1;
     }
 
-    /**
-     * Obtiene todos los elementos como un array
-     * @return Array con todos los elementos
-     */
+    // Obtiene todos los elementos como un array
+    // Retorna: Array con todos los elementos
     @SuppressWarnings("unchecked")
     public T[] obtenerTodos() {
         Object[] resultado = new Object[tamanio];
@@ -140,25 +117,19 @@ public class Lista<T> {
         return (T[]) resultado;
     }
 
-    /**
-     * Obtiene el tamaño actual de la lista
-     * @return Número de elementos
-     */
+    // Obtiene el tamaño actual de la lista
+    // Retorna: Número de elementos
     public int tamanio() {
         return tamanio;
     }
 
-    /**
-     * Verifica si la lista está vacía
-     * @return true si está vacía, false en caso contrario
-     */
+    // Verifica si la lista está vacía
+    // Retorna: true si está vacía, false en caso contrario
     public boolean estaVacia() {
         return tamanio == 0;
     }
 
-    /**
-     * Limpia todos los elementos de la lista
-     */
+    // Limpia todos los elementos de la lista
     public void limpiar() {
         for (int i = 0; i < tamanio; i++) {
             elementos[i] = null;
@@ -166,10 +137,8 @@ public class Lista<T> {
         tamanio = 0;
     }
 
-    /**
-     * Redimensiona el array interno cuando se llena
-     * Duplica la capacidad actual
-     */
+    // Redimensiona el array interno cuando se llena
+    // Duplica la capacidad actual
     private void redimensionar() {
         int nuevaCapacidad = elementos.length * 2;
         Object[] nuevoArray = new Object[nuevaCapacidad];

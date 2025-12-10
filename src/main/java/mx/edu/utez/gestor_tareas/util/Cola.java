@@ -1,11 +1,9 @@
 package mx.edu.utez.gestor_tareas.util;
 
-/**
- * Implementación de una estructura de datos Cola (Queue) usando FIFO (First In, First Out).
- * El primer elemento ingresado es el primero en salir.
- * Utilizada para gestionar tareas en el orden en que fueron creadas.
- * Implementada con arrays nativos, sin usar clases de java.util.*
- */
+// Implementación de una estructura de datos Cola (Queue) usando FIFO (First In, First Out).
+// El primer elemento ingresado es el primero en salir.
+// Utilizada para gestionar tareas en el orden en que fueron creadas.
+// Implementada con arrays nativos, sin usar clases de java.util.*
 public class Cola<T> {
     private Object[] elementos;
     private int frente;
@@ -14,9 +12,7 @@ public class Cola<T> {
     private int capacidad;
     private static final int CAPACIDAD_INICIAL = 10;
 
-    /**
-     * Constructor que inicializa la cola vacía
-     */
+    // Constructor que inicializa la cola vacía
     public Cola() {
         this.capacidad = CAPACIDAD_INICIAL;
         this.elementos = new Object[capacidad];
@@ -25,10 +21,8 @@ public class Cola<T> {
         this.tamanio = 0;
     }
 
-    /**
-     * Agrega un elemento al final de la cola (enqueue)
-     * @param elemento El elemento a agregar
-     */
+    // Agrega un elemento al final de la cola (enqueue)
+    // Parámetro: elemento - El elemento a agregar
     public void encolar(T elemento) {
         if (tamanio >= capacidad) {
             redimensionar();
@@ -38,10 +32,8 @@ public class Cola<T> {
         tamanio++;
     }
 
-    /**
-     * Elimina y retorna el elemento al frente de la cola (dequeue)
-     * @return El elemento eliminado, o null si la cola está vacía
-     */
+    // Elimina y retorna el elemento al frente de la cola (dequeue)
+    // Retorna: El elemento eliminado, o null si la cola está vacía
     @SuppressWarnings("unchecked")
     public T desencolar() {
         if (estaVacia()) {
@@ -54,10 +46,8 @@ public class Cola<T> {
         return elemento;
     }
 
-    /**
-     * Retorna el elemento al frente sin eliminarlo (front)
-     * @return El elemento al frente, o null si la cola está vacía
-     */
+    // Retorna el elemento al frente sin eliminarlo (front)
+    // Retorna: El elemento al frente, o null si la cola está vacía
     @SuppressWarnings("unchecked")
     public T frente() {
         if (estaVacia()) {
@@ -66,26 +56,20 @@ public class Cola<T> {
         return (T) elementos[frente];
     }
 
-    /**
-     * Verifica si la cola está vacía
-     * @return true si la cola está vacía, false en caso contrario
-     */
+    // Verifica si la cola está vacía
+    // Retorna: true si la cola está vacía, false en caso contrario
     public boolean estaVacia() {
         return tamanio == 0;
     }
 
-    /**
-     * Retorna el tamaño de la cola
-     * @return Número de elementos en la cola
-     */
+    // Retorna el tamaño de la cola
+    // Retorna: Número de elementos en la cola
     public int tamanio() {
         return tamanio;
     }
 
-    /**
-     * Obtiene todos los elementos de la cola (sin modificar la cola)
-     * @return Lista con todos los elementos
-     */
+    // Obtiene todos los elementos de la cola (sin modificar la cola)
+    // Retorna: Lista con todos los elementos
     public Lista<T> obtenerTodos() {
         Lista<T> resultado = new Lista<>();
         if (estaVacia()) {
@@ -101,9 +85,7 @@ public class Cola<T> {
         return resultado;
     }
 
-    /**
-     * Limpia todos los elementos de la cola
-     */
+    // Limpia todos los elementos de la cola
     public void limpiar() {
         int indice = frente;
         for (int i = 0; i < tamanio; i++) {
@@ -115,10 +97,8 @@ public class Cola<T> {
         tamanio = 0;
     }
 
-    /**
-     * Redimensiona el array interno cuando se llena
-     * Duplica la capacidad y reorganiza los elementos
-     */
+    // Redimensiona el array interno cuando se llena
+    // Duplica la capacidad y reorganiza los elementos
     private void redimensionar() {
         int nuevaCapacidad = capacidad * 2;
         Object[] nuevoArray = new Object[nuevaCapacidad];

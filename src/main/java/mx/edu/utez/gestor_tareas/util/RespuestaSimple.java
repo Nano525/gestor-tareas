@@ -1,9 +1,7 @@
 package mx.edu.utez.gestor_tareas.util;
 
-/**
- * Clase auxiliar para reemplazar Map<String, String> en respuestas del controlador.
- * Utilizada para respuestas JSON simples sin usar clases de java.util.*
- */
+// Clase auxiliar para reemplazar Map<String, String> en respuestas del controlador.
+// Utilizada para respuestas JSON simples sin usar clases de java.util.*
 public class RespuestaSimple {
     private String mensaje;
     private String estadisticas;
